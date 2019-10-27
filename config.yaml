@@ -1,0 +1,41 @@
+---
+stats:
+  sar:
+    monitor:
+      - memory
+      - cpu
+      - paging
+      - TCP
+      - UDP
+      - switch
+  influx:
+    connection:
+      host: localhost
+      port: 8086
+      user: root
+      password: root
+      dbname: test
+    parameters:
+      grouptime: 10s
+  bpf:
+    monitor:
+      - test
+test:
+  delay: 10s
+  duration: 15m
+  command: echo
+  config:
+    monitoring: infologger:///debug?qc
+  parameters:
+    size:
+      - 10000
+    frequency:
+      - 1000000
+      - 100000
+      - 10000
+      - 1000
+    task_time:
+      - 1000
+    check_time:
+      - 1000
+
