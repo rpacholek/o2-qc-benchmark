@@ -2,6 +2,7 @@ from .base import Statistics
 import os.path
 import subprocess
 import distutils.spawn
+import csv
 
 SarParams = {
     "memory": {
@@ -49,13 +50,16 @@ SarParams = {
 }
 
 class Sar(Statistics):
-    def __init__(self, test_name, workdir, config):
-        super().__init__(test_name, workdir, config)
+    def __init__(self, workdir, config):
+        super().__init__(workdir, config)
         self.process = None
         self.name = "sar.o"
         self.path = os.path.join(self.workdir, self.name)
 
-    def start(self):
+    def is_enabled(self):
+        return self.config.get("stats", {}).get("sar", None) is not None
+
+    def lazystart(self):
         if distutils.spawn.find_executable("sar"):
             self.f = open("/dev/null", "w")
             self.process = subprocess.Popen("sar -o {} -n TCP -n UDP -P ALL -Bruw 1".format(self.path).split(" "), stdout=self.f)
@@ -70,7 +74,7 @@ class Sar(Statistics):
     def postprocess(self):
         datafile = {}
         for group in self.config["stats"]["sar"]["monitor"]:
-            data = self.__sadf(self.path, SarParams[group])
+            data = self.__sadf(self.path, SarParams[group]["param"])
             data = self.__decode_sar(data)
             timestamps, data = self.__filter_sar(data)
 
@@ -83,7 +87,9 @@ class Sar(Statistics):
 
 
     def __sadf(self, filename, param):
-        p = subprocess.run("sadf -t -d -C {} -- {}".format(filename, param).split(" "), capture_output=True)
+        command ="sadf -t -d -C {} -- {}".format(filename, param).split(" ") 
+        p = subprocess.run(command, stdout=subprocess.PIPE)
+        #stdout, _stderr = p.communicate()
         return p.stdout.decode()
 
     def __decode_sar(self, data):

@@ -33,5 +33,5 @@ class Launcher:
         return self.pool() == None
 
     def force_quit(self):
-        subprocess.call(["killall", executable[0]])
+        subprocess.call(["killall", self.executable[0]])
 

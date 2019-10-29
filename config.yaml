@@ -10,7 +10,7 @@ stats:
       - switch
   influx:
     connection:
-      host: localhost
+      host: influxdb
       port: 8086
       user: root
       password: root
@@ -19,23 +19,29 @@ stats:
       grouptime: 10s
   bpf:
     monitor:
-      - test
+      - cachestat
+      - cpudist
+      - tcplife
+      - vfsreadlat
 test:
-  delay: 10s
+  delay: 30s
   duration: 15m
-  command: echo
+  command: qcRunBenchmark 
   config:
-    monitoring: infologger:///debug?qc
+    monitoring: influxdb-udp://influxdb:8088/debug
+    #    monitoring: infologger:///debug?qc
   parameters:
     size:
-      - 10000
+      - 1000
+      - 1000000
     frequency:
       - 1000000
-      - 100000
-      - 10000
       - 1000
+      - 1
     task_time:
       - 1000
+      - 10000
     check_time:
       - 1000
+      - 1000000
 

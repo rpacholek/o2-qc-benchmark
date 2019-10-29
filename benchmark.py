@@ -4,6 +4,7 @@ import itertools
 import yaml
 
 from launcher import Launcher
+from stats import StatisticManager
 
 def time_to_usec(s):
     return int(s[:-1]) * {"s": 1000*1000, "m": 60*1000**2, "h": 60**2*1000**2}[s[-1]]
@@ -21,12 +22,13 @@ class BenchmarkContext:
         self.config_template = config_template
         self.workdir = os.path.join(workdir, f"test_{BenchmarkContext.index}")
 
-        self.program_config = os.path.join(self.workdir, "benchmark.json")
+        self.program_config = os.path.join(os.getcwd(), self.workdir, "benchmark.json")
 
         self.__create_dir()
         self.__dump_env()
         
         self.__prepare_launcher()
+        self.__prepare_stats()
 
     def __create_dir(self):
         os.mkdir(self.workdir)
@@ -52,8 +54,7 @@ class BenchmarkContext:
 
     def __prepare_launcher(self):
         params = self.__prepare_params(self.params)
-        executable = [ 
-                self.config["test"]["command"], 
+        executable = self.config["test"]["command"].split() + [ 
                 "-b", 
                 "--monitoring-backend", self.config["test"]["config"]["monitoring"],
                 "--config-path", self.program_config
@@ -64,13 +65,24 @@ class BenchmarkContext:
 
         self.launcher = Launcher(executable, self.workdir, self.env, self.config)
 
+    def __prepare_stats(self):
+        self.stats = StatisticManager(self.workdir, self.config)
+
     def run(self):
+        print(f"Running with parameters: {self.params}")
+
+        self.stats.pre()
 
         self.launcher.run()
+        self.stats.start()
+
         try:
             self.launcher.wait()
         except KeyboardInterrupt:
-            self.force_quit()
+            self.launcher.force_quit()
+        self.stats.stop()
+
+        self.stats.post()
 
     def __prepare_params(self, params):
         params.update(self.config["test"]["config"])

@@ -1,16 +1,16 @@
 from abc import ABC, abstractmethod
 import json
+import os.path
 
 class Statistics(ABC):
-    def __init__(self, test_name, workdir, config):
-        self.test_name = test_name
+    def __init__(self, workdir, config):
         self.workdir = workdir
         self.config = config
 
-    def preprocess(self):
+    def start(self):
         pass
 
-    def start(self):
+    def lazystart(self):
         """
         Is triggered {test.pre_post_break} after launch,
         where it is expected for the setup to be ready.
@@ -28,9 +28,12 @@ class Statistics(ABC):
         Is triggered after the process is stoped.
         Expected to collect data and save to a file.
         """
+
+    def is_enabled(self):
+        return False
     
     def save(self, filename, data):
-        with open(os.path.join(self.workdir, filename)) as f:
+        with open(os.path.join(self.workdir, filename), "w") as f:
             json.dump(data, f)
 
 
