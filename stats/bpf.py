@@ -1,13 +1,8 @@
 import subprocess
 import pexpect
 from getpass import getpass
-from .base import Statistics
+from .base import Statistics, get_password
 import os
-
-sudo_password = None
-def log_into_sudo():
-    global sudo_password
-    sudo_password = getpass("Sudo password: ")
 
 class Bpf(Statistics):
     def __init__(self, workdir, config):
@@ -22,7 +17,7 @@ class Bpf(Statistics):
  
         # Authenticate sudo
         proc.expect("[sudo].*")
-        proc.sendline(sudo_password)
+        proc.sendline(get_password())
 
         fd = open(os.path.join(self.workdir, name + ".o"), "w")
         proc.logfile = fd

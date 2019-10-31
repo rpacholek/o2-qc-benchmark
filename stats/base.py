@@ -2,6 +2,15 @@ from abc import ABC, abstractmethod
 import json
 import os.path
 
+sudo_password = None
+def log_into_sudo():
+    global sudo_password
+    sudo_password = getpass("Sudo password: ")
+
+def get_password():
+    global sudo_password
+    return sudo_password
+
 class Statistics(ABC):
     def __init__(self, workdir, config):
         self.workdir = workdir

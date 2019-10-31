@@ -23,6 +23,10 @@ stats:
       - cpudist
       - tcplife
       - vfsreadlat
+  perf: 
+    monitor:
+      - QC-TASK-RUNNER
+      - QC-CHECK-RUNNER
 test:
   delay: 30s
   duration: 15m

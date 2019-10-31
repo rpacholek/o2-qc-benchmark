@@ -3,7 +3,7 @@ import yaml
 import time
 
 from benchmark import Benchmark
-from stats.bpf import log_into_sudo
+from stats.base import log_into_sudo
 
 def load_config(path):
     with open(path) as f:

@@ -1,6 +1,7 @@
 from .bpf import Bpf
 from .influx import Influx
 from .sar import Sar
+from .perf import Perf
 
 class StatisticManager:
     def __init__(self, workdir, config):
@@ -8,7 +9,7 @@ class StatisticManager:
         self.workdir = workdir
         self.config = config
         
-        collector_cls = [Influx, Bpf, Sar]
+        collector_cls = [Influx, Bpf, Sar, Perf]
         for ccls in collector_cls:
             self.__add_collector(ccls)
 
