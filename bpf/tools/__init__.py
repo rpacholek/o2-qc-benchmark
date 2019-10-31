@@ -4,6 +4,7 @@ import sys
 
 def wait_until_kill(f):
     def sig_handler(signum, frame):
+        print(f"Signal {signum}")
         f()
         sys.exit()
 

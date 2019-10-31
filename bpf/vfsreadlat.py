@@ -82,7 +82,7 @@ b.attach_kretprobe(event="vfs_read", fn_name="do_return")
 
 # output
 def output():
-    print([ i.value  for i in  b["dist"] ])
+    print([ int(i.value) for i in b["dist"].values() ])
     #b["dist"].print_log2_hist("usecs")
     #b["dist"].clear()
 

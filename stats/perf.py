@@ -5,6 +5,7 @@ from .base import Statistics, get_password
 import os
 import random
 import psutil
+import traceback
 
 class Perf(Statistics):
     def __init__(self, workdir, config):
@@ -39,20 +40,11 @@ class Perf(Statistics):
 
     def postprocess(self):
         try:
-            #p = pexpect.spawn(f"sudo chown alice {self.fname}")
-            #if p.isalive() and p.expect(".*"):
-            #    p.sendline(get_password())
-    
-            with open(f"{self.fname}.sc", "w") as f:
-                p = pexpect.spawn(f"perf script -i {self.fname}")
-                f.write(p.read())
-            with open(f"{self.fname}.fold", "w") as f:
-                p = pexpect.spawn(f"stackcollapse-perf.pl {self.fname}.sc")
-                f.write(p.read())
-            with open(f"{self.fname}.svg", "w") as f:
-                p = pexpect.spawn(f"flamegraph.pl {self.fname}.fold")
-                f.write(p.read())
+            pexpect.spawn(f"bash -c 'perf script -i {self.fname} > {self.fname}.sc'", timeout=30).wait()
+            pexpect.spawn(f"bash -c 'stackcollapse-perf.pl {self.fname}.sc > {self.fname}.fold'", timeout=30).wait()
+            pexpect.spawn(f"bash -c 'flamegraph.pl {self.fname}.fold > {self.fname}.svg'", timeout=30).wait()
         except Exception as e:
+            print(traceback.format_exc())
             print(e)
     
     def is_enabled(self):

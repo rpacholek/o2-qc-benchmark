@@ -13,17 +13,14 @@ class Bpf(Statistics):
         self.files = []
 
     def run_proc(self, name):
-        proc = pexpect.spawn(f"sudo ./bpf/{name}.py")
+        path = os.path.join(self.workdir, name + ".o")
+        proc = pexpect.spawn(f"sudo bash -c './bpf/{name}.py > {path}'")
  
         # Authenticate sudo
-        proc.expect("[sudo].*")
+        proc.expect("[sudo].*:")
         proc.sendline(get_password())
 
-        fd = open(os.path.join(self.workdir, name + ".o"), "w")
-        proc.logfile = fd
-
         self.processes.append(proc)
-        self.files.append(fd)
 
     def start(self):
         metrics = self.config["stats"]["bpf"]["monitor"] 
@@ -32,9 +29,10 @@ class Bpf(Statistics):
 
     def stop(self):
         for proc in self.processes:
-            proc.close()
-        for fd in self.files:
-            fd.close()
+            pid = proc.pid
+            p = pexpect.spawn(f"sudo bash -c 'kill -2 {pid}'")
+            p.expect("[sudo].*:")
+            p.sendline(get_password())
 
     def postprocess(self):
         """

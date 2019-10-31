@@ -25,6 +25,8 @@ import signal
 import re
 from sys import argv
 
+print("Init")
+
 # signal handler
 def signal_ignore(signal, frame):
     print()

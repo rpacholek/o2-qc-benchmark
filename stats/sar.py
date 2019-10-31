@@ -68,7 +68,8 @@ class Sar(Statistics):
 
     def stop(self):
         if self.process:
-            self.process.kill()
+            self.process.send_signal(2)
+            self.process.send_signal(15)
             self.f.close()
 
     def postprocess(self):

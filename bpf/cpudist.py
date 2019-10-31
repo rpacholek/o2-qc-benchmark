@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # @lint-avoid-python-3-compatibility-imports
 #
 # cpudist   Summarize on- and off-CPU time per task as a histogram.
@@ -15,7 +15,6 @@ from __future__ import print_function
 from bcc import BPF
 from time import sleep, strftime
 import argparse
-from tools import wait_until_kill
 
 examples = """examples:
     cpudist              # summarize on-CPU time as a histogram
@@ -95,7 +94,9 @@ static inline void update_hist(u32 tgid, u32 pid, u64 ts)
     STORE
 }
 
-int sched_switch(struct pt_regs *ctx, struct task_struct *prev)
+struct rq;
+
+int sched_switch(struct pt_regs *ctx, struct rq *rq, struct task_struct *prev)
 {
     u64 ts = bpf_ktime_get_ns();
     u64 pid_tgid = bpf_get_current_pid_tgid();
@@ -171,8 +172,9 @@ def output():
         except IOError:
             return str(pid)
 
-    print([ i.value for i in dist.values()])
+    print([ int(i.value) for i in dist.values()])
     #dist.print_log2_hist(label, section, section_print_fn=pid_to_comm)
     #dist.clear()
 
+from tools import wait_until_kill
 wait_until_kill(output)
