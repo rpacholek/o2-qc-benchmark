@@ -28,6 +28,7 @@
         "frequency": "$frequency",
         "duration": "$duration",
         "delay": "$delay",
+	"adaptive": "0",
         "output": "BENC/BENCH1/0"
       }
     },

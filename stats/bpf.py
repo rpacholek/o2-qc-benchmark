@@ -2,6 +2,7 @@ import subprocess
 import pexpect
 from getpass import getpass
 from .base import Statistics
+import os
 
 sudo_password = None
 def log_into_sudo():
@@ -12,16 +13,16 @@ class Bpf(Statistics):
     def __init__(self, workdir, config):
         self.workdir = workdir
         self.config = config
-        self.metrics = config["stats"]["bpf"]["monitor"]
+        
         self.processes = []
         self.files = []
 
     def run_proc(self, name):
-        proc = pexpect.spawn("sudo ./bpf/run.py")
+        proc = pexpect.spawn(f"sudo ./bpf/{name}.py")
  
         # Authenticate sudo
         proc.expect("[sudo].*")
-        proc.sendline(password)
+        proc.sendline(sudo_password)
 
         fd = open(os.path.join(self.workdir, name + ".o"), "w")
         proc.logfile = fd
@@ -30,7 +31,8 @@ class Bpf(Statistics):
         self.files.append(fd)
 
     def start(self):
-        for metric in self.metrics:
+        metrics = self.config["stats"]["bpf"]["monitor"] 
+        for metric in metrics:
             self.run_proc(metric)
 
     def stop(self):

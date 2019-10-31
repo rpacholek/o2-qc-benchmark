@@ -1,4 +1,4 @@
-import signal, os
+import signal
 import time
 import sys
 
