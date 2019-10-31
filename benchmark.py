@@ -2,6 +2,7 @@ import time
 import os
 import itertools
 import yaml
+import datetime
 
 from launcher import Launcher
 from stats import StatisticManager
@@ -22,6 +23,7 @@ class BenchmarkContext:
         self.config_template = config_template
         self.workdir = os.path.join(workdir, f"test_{BenchmarkContext.index}")
 
+        self.duration = 0
         self.program_config = os.path.join(os.getcwd(), self.workdir, "benchmark.json")
 
         self.__create_dir()
@@ -74,7 +76,11 @@ class BenchmarkContext:
         self.stats.pre()
 
         self.launcher.run()
+        time.sleep(10)
         self.stats.start()
+        if self.duration:
+           t = datetime.datetime.now() + datetime.timedelta(seconds=self.duration - 10)
+           print(f"Launched. Test expected to end at {t.strftime('%H:%M:%S')}")
 
         try:
             self.launcher.wait()
@@ -89,6 +95,8 @@ class BenchmarkContext:
 
         params["duration"] = time_to_usec(self.config["test"]["duration"])//10**6
         params["delay"] = time_to_usec(self.config["test"]["delay"])//10**6
+
+        self.duration = params["duration"] + params["delay"]
 
         return params
 
