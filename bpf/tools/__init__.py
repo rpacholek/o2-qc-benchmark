@@ -4,7 +4,6 @@ import sys
 
 def wait_until_kill(f):
     def sig_handler(signum, frame):
-        print(f"Signal {signum}")
         f()
         sys.exit()
 
@@ -12,5 +11,6 @@ def wait_until_kill(f):
     signal.signal(signal.SIGTERM, sig_handler)
 
     while True:
-        time.sleep(10000)
+        time.sleep(60)
+        f()
 
