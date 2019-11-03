@@ -126,11 +126,14 @@ class Benchmark:
 
     def __load_parameters(self):
         d = self.config["test"]["parameters"]
-        return d.keys(), itertools.product(*d.values())
+        return d.keys(), list(itertools.product(*d.values()))
 
     def run(self):
         keys, values = self.__load_parameters()
+        i = 1
         for value in values:
+            print(f"Running test {i} out of {len(values)}")
+            i+=1
             params = dict(zip(keys, value))
             benchmark_context = BenchmarkContext(params, self.workdir, self.config_template, self.env, self.config)
             benchmark_context.run()

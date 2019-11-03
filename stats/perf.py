@@ -28,7 +28,7 @@ class Perf(Statistics):
         self.fname = os.path.join(self.workdir, f"{pname}-perf.data")
         pid = self.__get_pid(self.config["test"]["command"], pname)
         if pid:
-            command = f"sudo bash -c 'perf record -o {self.fname} -F 99 -p {pid} -a -g && chown alice {self.fname}'"
+            command = f"sudo bash -c 'perf record -o {self.fname} -F 99 -p {pid} -a -g --call-graph dwarf  && chown alice {self.fname}'"
             self.process = pexpect.spawn(command)
             self.process.expect("[sudo].*:")
             self.process.sendline(get_password())

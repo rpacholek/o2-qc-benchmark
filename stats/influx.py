@@ -18,7 +18,7 @@ InfluxStats = [
 	("min_input_latency_ms", "min"),
 	("inputs/relayed/total", "mean"),
 	# GENERATOR
-        ("QC/generator/objects_published", "last"),
+        ("QC/generator/total/objects_published", "last"),
         ("QC/generator/rate/objects_published_per_10_sec", "mean"),
 	("QC/generator/last/frequency", "mean"),
 	# TASK
@@ -62,20 +62,27 @@ class Influx(Statistics):
         client = InfluxDBClient(cfg["host"], cfg["port"], cfg["user"], cfg["password"], cfg["dbname"])
 
         start, stop, groupdur = self.start, self.stop, self.config["stats"]["influx"]["parameters"]["grouptime"]
-        datafile = {"influx": {}}
+        datafile = {}
         for name, op in InfluxStats:
             query = f'select {op}(value) from test.autogen."{name}" \
                       where time >= \'{start}\' and time < \'{stop}\' \
-                      group by time({groupdur}) fill(null)'
+                      group by time({groupdur}),* fill(null)'
 
-            result = client.query(query).get_points()
-            data = {"name": name, "operation": op, "group_duration": groupdur}
+            q = client.query(query)
+            devices = [ k[1].get("dataprocessor_id", "undefined") for k in q.keys() ]
+            for device in devices:
+                datafile[device] = {}
+                data = {"name": name, "operation": op, "group_duration": groupdur}
 
-            r = list(zip(*[[item["time"], item[(set(item.keys()) - {'time'}).pop()]] for item in result]))
-            if r:
-                data["value"] = list(r[1])
-                data["timestamp"] = [ time.mktime(time.strptime(t, "%Y-%m-%dT%H:%M:%SZ")) if t else None for t in r[0]]
-            datafile["influx"][name] = data
-
+                if device == "undefined":
+                    result = q.get_points(tags={"dataprocessor_id": device})
+                else:
+                    result = q.get_points()
+                r = list(zip(*[[item["time"], item[(set(item.keys()) - {'time'}).pop()]] for item in result]))
+                if r:
+                    data["value"] = list(r[1])
+                    data["timestamp"] = [ time.mktime(time.strptime(t, "%Y-%m-%dT%H:%M:%SZ")) if t else None for t in r[0]]
+                datafile[device][name] = data
+    
         self.save("influx.json", datafile)
         
