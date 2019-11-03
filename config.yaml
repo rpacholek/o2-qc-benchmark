@@ -23,6 +23,7 @@ stats:
       - cpudist
       - tcplife
       - vfsreadlat
+      - recvlat
   perf: 
     monitor:
       - QC-TASK-RUNNER
