@@ -64,25 +64,23 @@ class Influx(Statistics):
         start, stop, groupdur = self.start, self.stop, self.config["stats"]["influx"]["parameters"]["grouptime"]
         datafile = {}
         for name, op in InfluxStats:
-            query = f'select {op}(value) from test.autogen."{name}" \
-                      where time >= \'{start}\' and time < \'{stop}\' \
-                      group by time({groupdur}),* fill(null)'
+            query = f'select * from test.autogen."{name}" \
+                      where time >= \'{start}\' and time < \'{stop}\'' 
 
             q = client.query(query)
-            devices = [ k[1].get("dataprocessor_id", "undefined") for k in q.keys() ]
-            for device in devices:
-                datafile[device] = {}
-                data = {"name": name, "operation": op, "group_duration": groupdur}
+            container = {}
+            for entry in q.get_points():
+                device = entry.get("dataprocessor_id", "undefined")
+                cur_dict = container.get(device, {"timestamp": [], "value": []})
+                
+                cur_dict["timestamp"].append(entry["time"])
+                cur_dict["value"].append(entry["value"])
 
-                if device == "undefined":
-                    result = q.get_points(tags={"dataprocessor_id": device})
-                else:
-                    result = q.get_points()
-                r = list(zip(*[[item["time"], item[(set(item.keys()) - {'time'}).pop()]] for item in result]))
-                if r:
-                    data["value"] = list(r[1])
-                    data["timestamp"] = [ time.mktime(time.strptime(t, "%Y-%m-%dT%H:%M:%SZ")) if t else None for t in r[0]]
-                datafile[device][name] = data
-    
+                container[device] = cur_dict
+            for k, v in container.items():
+                if k not in datafile:
+                    datafile[k] = {}
+                #datafile[k][name] = {"name": name, "operation": op, "group_duration": groupdur, **v}
+                datafile[k][name] = v
         self.save("influx.json", datafile)
         

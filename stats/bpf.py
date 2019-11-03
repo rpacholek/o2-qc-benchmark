@@ -33,7 +33,6 @@ class Bpf(Statistics):
         for proc, name in zip(self.processes, self.names):
             pid = proc.pid
             command = f"sudo bash -c 'pkill -2 ./bpf/{name}.py'"
-            print(command)
             p = pexpect.spawn(command)
             p.expect("[sudo].*:")
             p.sendline(get_password())
