@@ -22,23 +22,6 @@ from time import sleep
 from sys import argv
 from tools import wait_until_kill
 
-def usage():
-	print("USAGE: %s [interval [count]]" % argv[0])
-	exit()
-
-# arguments
-interval = 5
-count = -1
-if len(argv) > 1:
-	try:
-		interval = int(argv[1])
-		if interval == 0:
-			raise
-		if len(argv) > 2:
-			count = int(argv[2])
-	except:	# also catches -h, --help
-		usage()
-
 bpf_text = """
 #include <uapi/linux/ptrace.h>
 
@@ -81,7 +64,9 @@ b.attach_kretprobe(event="vfs_read", fn_name="do_return")
 
 
 # output
+f = open(argv[1], "w")
 def output():
+    f.write(" ".join([ str(int(i.value)) for i in b["dist"].values() ]))
     print([ int(i.value) for i in b["dist"].values() ])
     #b["dist"].print_log2_hist("usecs")
     #b["dist"].clear()

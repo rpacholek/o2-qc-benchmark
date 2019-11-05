@@ -40,6 +40,11 @@ SarParams = {
             {"title": "UDP", "cols": "idgm/s;odgm/s;noport/s;idgmerr/s".split(";"), "type": None}
         ]
         },
+    "SOFT": {
+        "param": "-n SOFT",
+        "title": "SOFT",
+        "plots": []
+    },
     "switch": {
         "param": "-w",
         "title": "task creation and system switching activity",
@@ -62,7 +67,7 @@ class Sar(Statistics):
     def lazystart(self):
         if distutils.spawn.find_executable("sar"):
             self.f = open("/dev/null", "w")
-            self.process = subprocess.Popen("sar -o {} -n TCP -n UDP -P ALL -Bruw 1".format(self.path).split(" "), stdout=self.f)
+            self.process = subprocess.Popen("sar -o {} -n TCP -n UDP -n SOFT -P ALL -Bruw 1".format(self.path).split(" "), stdout=self.f)
         else:
             self.process = None
 
@@ -75,7 +80,7 @@ class Sar(Statistics):
     def postprocess(self):
         datafile = {}
         for group in self.config["stats"]["sar"]["monitor"]:
-            data = self.__sadf(self.path, SarParams[group]["param"])
+            data = self.__sadf(self.path, SarParams[group]["param"], group)
             data = self.__decode_sar(data)
             timestamps, data = self.__filter_sar(data)
 
@@ -87,18 +92,20 @@ class Sar(Statistics):
         self.save("sar.json", datafile)
 
 
-    def __sadf(self, filename, param):
+    def __sadf(self, filename, param, group):
         command ="sadf -t -d -C {} -- {}".format(filename, param).split(" ") 
         p = subprocess.run(command, stdout=subprocess.PIPE)
+        subprocess.run(["bash", "-c", "sadf -g {} -- {} > {}".format(filename, param, os.path.join(self.workdir, group + ".svg"))]) 
         #stdout, _stderr = p.communicate()
         return p.stdout.decode()
 
     def __decode_sar(self, data):
         iterator = csv.reader(data.splitlines(), delimiter=';')
-        header = next(iterator)
-        matrix = zip(*list(iterator))
-        matrix = [ [float(s.replace(",",".")) for s in row] if set(row[0]).issubset(set("1234567890,")) else row for row in matrix ]
-        return dict(zip(header, matrix))
+        header = next(iterator, None)
+        if header:
+            matrix = zip(*list(iterator))
+            matrix = [ [float(s.replace(",",".")) for s in row] if set(row[0]).issubset(set("1234567890,")) else row for row in matrix ]
+            return dict(zip(header, matrix))
 
     def __filter_sar(self, data, columns=None):
         data = data.copy()

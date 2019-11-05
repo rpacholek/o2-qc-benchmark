@@ -11,6 +11,6 @@ def wait_until_kill(f):
     signal.signal(signal.SIGTERM, sig_handler)
 
     while True:
-        time.sleep(60)
+        time.sleep(30)
         f()
 

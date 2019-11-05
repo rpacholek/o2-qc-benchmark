@@ -19,8 +19,8 @@ InfluxStats = [
 	("inputs/relayed/total", "mean"),
 	# GENERATOR
         ("QC/generator/total/objects_published", "last"),
-        ("QC/generator/rate/objects_published_per_10_sec", "mean"),
-	("QC/generator/last/frequency", "mean"),
+        ("QC/generator/rate/frequency", "mean"),
+	("QC/generator/last/config_time", "mean"),
 	# TASK
         ("QC/task/cycle/blocks_received", "mean"),
         ("QC/task/cycle/objects_published", "mean"),
@@ -28,8 +28,10 @@ InfluxStats = [
         ("QC/task/total/objects_published", "last"),
         ("QC/task/Publish_duration", "mean"),
         ("QC/task/rate/objects_published_per_second", "mean"),
+        ("QC/task/rate/run_duration", "last"),
         ("QC/task/total/activity_duration", "last"),
-        ("QC/task/total/rate/objects_published_per_second", "mean"),
+        ("QC/task/last/publication_duration", "last"),
+        ("QC/task/cycle/objects_published_per_second", "mean"),
         # CHECK
         ("QC/check/Rate_objects_treated_per_second_whole_run", "mean"),
         ("QC/check/Time_between_first_and_last_objects_received", "mean"),
@@ -40,6 +42,9 @@ InfluxStats = [
         ("QC/check/total/objects_published", "last"),
         ("QC/check/total/objects_received", "last"),
         ("QC/check/total/run_duration", "mean"),
+	("QC/check/once/stored_monitor_objects", "last"),
+	("QC/check/once/stored_quality_objects", "last"),
+	("QC/check/total/calls", "last"),
         # COLLECTOR
 	("QC/collector/total/objects_received", "last"),
     ]

@@ -15,7 +15,7 @@ class Bpf(Statistics):
 
     def run_proc(self, name):
         path = os.path.join(self.workdir, name + ".o")
-        proc = pexpect.spawn(f"sudo bash -c './bpf/{name}.py > {path}'")
+        proc = pexpect.spawn(f'sudo ./bpf/{name}.py {path}')
         self.names.append(name)
  
         # Authenticate sudo

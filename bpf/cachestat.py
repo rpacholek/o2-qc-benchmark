@@ -52,23 +52,6 @@ misses = 0
 hits = 0
 debug = 0
 
-# arguments
-parser = argparse.ArgumentParser(
-    description="Count cache kernel function calls",
-    formatter_class=argparse.RawDescriptionHelpFormatter)
-parser.add_argument("-T", "--timestamp", action="store_true",
-    help="include timestamp on output")
-parser.add_argument("interval", nargs="?", default=1,
-    help="output interval, in seconds")
-parser.add_argument("count", nargs="?", default=-1,
-    help="number of outputs")
-parser.add_argument("--ebpf", action="store_true",
-    help=argparse.SUPPRESS)
-args = parser.parse_args()
-count = int(args.count)
-tstamp = args.timestamp
-interval = int(args.interval)
-
 # define BPF program
 bpf_text = """
 #include <uapi/linux/ptrace.h>
@@ -88,12 +71,6 @@ int do_count(struct pt_regs *ctx) {
 }
 
 """
-
-if debug or args.ebpf:
-    print(bpf_text)
-    if args.ebpf:
-        exit()
-
 # load BPF program
 b = BPF(text=bpf_text)
 b.attach_kprobe(event="add_to_page_cache_lru", fn_name="do_count")
@@ -109,6 +86,7 @@ print("%8s %8s %8s %8s %12s %10s" %
 
 loop = 0
 exiting = 0
+
 while 1:
     if count > 0:
         loop += 1
